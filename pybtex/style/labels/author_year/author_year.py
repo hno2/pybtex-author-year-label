@@ -28,7 +28,6 @@ Andrey Golovizin.
 """
 
 import re
-import sys
 import unicodedata
 from collections import Counter
 
