@@ -4,8 +4,8 @@ from shutil import which
 
 from invoke import task
 
-PKG_NAME = "author_year"
-PKG_PATH = Path(f"pybtex/style/labels/{PKG_NAME}")
+PKG_NAME = "pybtex_author_year_label"
+PKG_PATH = Path(f"{PKG_NAME}")
 ACTIVE_VENV = os.environ.get("VIRTUAL_ENV", None)
 VENV_HOME = Path(os.environ.get("WORKON_HOME", "~/.local/share/virtualenvs"))
 VENV_PATH = Path(ACTIVE_VENV) if ACTIVE_VENV else (VENV_HOME / PKG_NAME)
@@ -51,7 +51,7 @@ def flake8(c):
 @task
 def lint(c):
     isort(c, check=False)
-    black(c, check=True)
+    black(c, check=False)
     flake8(c)
 
 
