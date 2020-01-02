@@ -3,6 +3,8 @@ from unittest.mock import Mock
 
 from pybtex.database import Entry, Person
 from pybtex_author_year_label import (
+    LabelStyle1,
+    LabelStyle2,
     _replace_curly_braces,
     _strip_non_alnum,
     author_editor_key_label,
@@ -10,11 +12,16 @@ from pybtex_author_year_label import (
     author_key_organization_label,
     editor_key_organization_label,
     format_label_names,
+    format_label_style_1,
+    format_label_style_2,
     key_organization_label,
 )
 import pytest
 
 
+################################
+# Mocks
+################################
 @pytest.fixture()
 def format_label_names_mock(mocker) -> Mock:
     return mocker.patch("pybtex_author_year_label.format_label_names")
@@ -25,6 +32,14 @@ def key_organization_label_mock(mocker) -> Mock:
     return mocker.patch("pybtex_author_year_label.key_organization_label")
 
 
+@pytest.fixture()
+def format_label_mock(mocker) -> Mock:
+    return mocker.patch("pybtex_author_year_label.format_label")
+
+
+################################
+# Fixtures
+################################
 @pytest.fixture()
 def key_field():
     return {"key": "demo-entry"}
@@ -43,6 +58,21 @@ def editor():
 @pytest.fixture()
 def organization():
     return {"organization": "Python Foundation"}
+
+
+@pytest.fixture()
+def label_style_1():
+    return LabelStyle1()
+
+
+@pytest.fixture()
+def label_style_2():
+    return LabelStyle2()
+
+
+################################
+# Tests
+################################
 
 
 @pytest.mark.parametrize(
@@ -221,3 +251,37 @@ def test_author_key_organization_label__without_author(
 
     # Assert
     assert actual == "demo-entry"
+
+
+def test_label_style_1_name(label_style_1):
+    assert label_style_1.name == "author_year_1"
+
+
+def test_label_style_2_name(label_style_2):
+    assert label_style_2.name == "author_year_2"
+
+
+@pytest.mark.parametrize(
+    "fields,expected", [({}, "(Einstein)"), ({"year": "2019"}, "(Einstein,2019)")]
+)
+def test_format_label_style_1(format_label_mock, fields, expected):
+    format_label_mock.return_value = "Einstein"
+
+    entry = Entry("misc", fields=fields)
+
+    actual = format_label_style_1(entry)
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "fields,expected", [({}, "Einstein"), ({"year": "2019"}, "Einstein (2019)")]
+)
+def test_format_label_style_2(format_label_mock, fields, expected):
+    format_label_mock.return_value = "Einstein"
+
+    entry = Entry("misc", fields=fields)
+
+    actual = format_label_style_2(entry)
+
+    assert actual == expected

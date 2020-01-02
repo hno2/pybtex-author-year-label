@@ -27,7 +27,6 @@ modified from the alpha style built into Pybtex, written by
 Andrey Golovizin.
 """
 
-from collections import Counter
 import re
 from typing import List
 import unicodedata
@@ -141,7 +140,7 @@ def author_key_organization_label(entry: Entry) -> str:
     return key_organization_label(entry)
 
 
-def format_label(entry: Entry):
+def format_label(entry: Entry) -> str:
     # see alpha.bst calc.label
     if entry.type in ("book", "inbook"):
         label = author_editor_key_label(entry)
@@ -152,13 +151,60 @@ def format_label(entry: Entry):
     else:
         label = author_key_label(entry)
 
-    label = label.strip()
+    return label.strip()
+    # bst additionally sets sort.label
+
+
+def format_label_style_1(entry: Entry) -> str:
+    """Wraps both name(s) and year inside parenthesis
+
+    Args:
+        entry: Entry that the label is created from.
+
+    Returns: The formatted label
+
+    Examples:
+        >>> entry = Entry('misc', fields={}, persons={"author": [Person(last="Einstein")]})
+        >>> format_label_style_1(entry)
+        '(Einstein)'
+
+        >>> entry = Entry('misc', fields={'year': '2019'}, persons={"author": [Person(last="Einstein")]})
+        >>> format_label_style_1(entry)
+        '(Einstein,2019)'
+
+    """
+    label = format_label(entry)
 
     if "year" in entry.fields:
-        return f"{label},{entry.fields['year']}"
+        return f"({label},{entry.fields['year']})"
     else:
-        return label
-    # bst additionally sets sort.label
+        return f"({label})"
+
+
+def format_label_style_2(entry: Entry) -> str:
+    """Wraps only the year inside parenthesis
+
+    Args:
+        entry: Entry that the label is created from.
+
+    Returns: The formatted label
+
+    Examples:
+        >>> entry = Entry('misc', fields={}, persons={"author": [Person(last="Einstein")]})
+        >>> format_label_style_2(entry)
+        'Einstein'
+
+        >>> entry = Entry('misc', fields={'year': '2019'}, persons={"author": [Person(last="Einstein")]})
+        >>> format_label_style_2(entry)
+        'Einstein (2019)'
+
+    """
+    label = format_label(entry)
+
+    if "year" in entry.fields:
+        return f"{label} ({entry.fields['year']})"
+    else:
+        return f"{label}"
 
 
 def _replace_curly_braces(label: str) -> str:
@@ -170,18 +216,27 @@ def _replace_curly_braces(label: str) -> str:
     )
 
 
-class LabelStyle(BaseLabelStyle):
-    name = "author_year"
+class LabelStyle1(BaseLabelStyle):
+    """Formats labels using `format_label_style_1`"""
 
-    def format_labels(self, sorted_entries):
-        labels = [format_label(entry) for entry in sorted_entries]
+    name = "author_year_1"
+
+    def format_labels(self, sorted_entries: List[Entry]):
+        labels = [format_label_style_1(entry) for entry in sorted_entries]
         labels = [_replace_curly_braces(label) for label in labels]
 
-        count = Counter(labels)
-        counted = Counter()
         for label in labels:
-            if count[label]:
-                yield "(" + label + ")"
-            else:
-                yield "(" + label + chr(ord("a") + counted[label]) + ")"
-                counted.update([label])
+            yield label
+
+
+class LabelStyle2(BaseLabelStyle):
+    """Formats labels using `format_label_style_2`"""
+
+    name = "author_year_2"
+
+    def format_labels(self, sorted_entries: List[Entry]):
+        labels = [format_label_style_2(entry) for entry in sorted_entries]
+        labels = [_replace_curly_braces(label) for label in labels]
+
+        for label in labels:
+            yield label
