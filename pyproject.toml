@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pybtex-author-year-label"
-version = "0.1.3"
+version = "1.0.0"
 description = "Defines an author-year inline citation style for Pybtex."
 authors = ["Johan Vergeer <johanvergeer@gmail.com>"]
 license = "MIT"
