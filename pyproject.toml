@@ -31,10 +31,10 @@ classifiers = [
 "Tracker" = "https://github.com/johanvergeer/pybtex-author-year-label/issues"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-pelican = "^4.2"
+python = "*"
+pelican = "*"
 markdown = {version = "^3.1.1",optional = true}
-pybtex = "^0.22.2"
+pybtex = "*"
 pytest-mock = "^1.13.0"
 
 [tool.poetry.dev-dependencies]
